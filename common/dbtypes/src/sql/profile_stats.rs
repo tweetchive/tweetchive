@@ -1,13 +1,16 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "retweets")]
+#[sea_orm(table_name = "profile_stats")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
-    pub retweeted_by: u64,
-    pub retweet_of: u64,
-    pub after_tweet_on_timeline: u64,
+    pub user: u64,
+
+    pub following: u64,
+    pub followers: u64,
+
+    pub snapshot_id: u64,
 }
 
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, EnumIter)]

@@ -1,15 +1,17 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "pages")]
+#[sea_orm(table_name = "profile_status")]
 pub struct Model {
-    #[sea_orm(primary_key, auto_increment = false)]
-    pub id: u64,
+    #[sea_orm(primary_key)]
+    pub id: Uuid,
     pub user: u64,
-    
+
     pub suspended: bool,
     pub private: bool,
-    
+    pub verified: bool,
+    pub pinned: u64,
+
     pub snapshot_id: u64,
 }
 

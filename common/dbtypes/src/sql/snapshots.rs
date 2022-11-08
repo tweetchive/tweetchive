@@ -1,13 +1,14 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "pages")]
+#[sea_orm(table_name = "snapshots")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
     pub when: DateTime,
     pub finish: DateTime,
     pub machine: String,
+    pub initiator: String,
 }
 
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, EnumIter)]

@@ -4,7 +4,8 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "files")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub hash: Vec<u8>,
+    pub id: Uuid,
+    pub sha_256_digest: Vec<u8>,
     pub large: bool,
     #[sea_orm(column_type = "Text")]
     pub url: String,

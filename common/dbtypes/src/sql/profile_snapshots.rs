@@ -1,18 +1,22 @@
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "pages")]
+#[sea_orm(table_name = "profile_snapshot")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: Uuid,
     pub user: u64,
+    #[sea_orm(indexed, column_type = "Text")]
     pub display: String,
+    #[sea_orm(indexed, column_type = "Text")]
     pub handle: String,
+    #[sea_orm(column_type = "Text")]
     pub bio: String,
-    pub profession: String,
+    #[sea_orm(nullable, column_type = "Text")]
+    pub profession: Option<String>,
     pub joined: DateTime,
     pub birthday: DateTime,
-    pub profile: String,
+    pub pfp: Uuid,
     pub snapshot_id: u64,
 }
 

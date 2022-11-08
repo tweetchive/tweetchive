@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/common/dbtypes/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/twitter_worker/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/twtchive-server/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/common/twitchive_unofficial/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/services/twtchive-server/target" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>

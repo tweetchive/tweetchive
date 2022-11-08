@@ -3,7 +3,7 @@ use ahash::RandomState;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct ReTweetDiff {
     pub tweet_id: u64,
     pub tweet_user: u64,
