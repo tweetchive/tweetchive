@@ -13,8 +13,8 @@ pub enum TwitterApiError {
     Proxy,
     #[error("HTTP Error {0}")]
     HttpError(u16),
-    #[error("Error while scraping")]
-    Scrape,
+    #[error("Error while scraping: {0}")]
+    Scrape(String),
 }
 
 impl From<reqwest::Error> for TwitterApiError {
