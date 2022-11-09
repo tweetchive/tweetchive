@@ -1,8 +1,9 @@
 use crate::error::TwitterApiError;
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{Date, DateTime, NaiveDateTime, Utc};
 use reqwest::header::ToStrError;
 use reqwest::{header, Client, ClientBuilder};
-use scraper::{Html, Selector};
+use scraper::node::Text;
+use scraper::{ElementRef, Html, Selector};
 use std::ops::Deref;
 use tokio_rayon::spawn;
 
@@ -29,12 +30,18 @@ static TIMELINE_NEXT_SELECTOR: Selector = Selector::parse("show-more").unwrap();
 static TIMELINE_TWEETS_SELECTOR: Selector = Selector::parse("timeline-item").unwrap();
 
 static TWEET_SHOW_THREAD_SELECTOR: Selector = Selector::parse("show-thread").unwrap();
+static TWEET_LINK_SELECTOR: Selector = Selector::parse("tweet-link").unwrap();
 static TWEET_STATS_SELECTOR: Selector = Selector::parse("tweet-stats").unwrap();
-static TWEET_CONTENT_SELECTOR: Selector = Selector::parse("tweet-content").unwrap();
+static TWEET_CONTENT_SELECTOR: Selector = Selector::parse("tweet-content media-body").unwrap();
+static TWEET_PINNED_SELECTOR: Selector = Selector::parse("pinned").unwrap();
+static TWEET_UNAVAILABLE_SELECTOR: Selector = Selector::parse("unavailable-box").unwrap();
+static TWEET_RETAIL_SELECTOR: Selector = Selector::parse("retweet-header").unwrap();
+static TWEET_DATE_SELECTOR: Selector = Selector::parse("tweet-date").unwrap();
 static THREAD_SHOW_SELECTOR: Selector = Selector::parse("show-thread").unwrap();
 
 const JOINDATE_STR: &str = "%R %p - %e %b %Y";
-
+const TWEETDATE_STR: &str = "%b %e, %Y · %R%p UTC";
+//Nov 9, 2022 · 3:58 PM UTC
 pub struct Config {
     pub nitter_address: String,
 }
@@ -53,157 +60,6 @@ impl Scraper {
             .map_err(|_| TwitterApiError::UnknownError)?;
 
         Ok(Self { config, requester })
-    }
-
-    pub async fn user_matters(&self, username: String) -> Result<PartialUser, TwitterApiError> {
-        let page = self
-            .requester
-            .get(format!("{}/{username}", self.config.nitter_address))
-            .send()
-            .await?
-            .text()
-            .await?;
-
-        let parsed = Html::parse_document(&page);
-
-        let name = parsed
-            .select(&PROFILE_FULLNAME_SELECTOR)
-            .next()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?;
-
-        let username = parsed
-            .select(&PROFILE_USERNAME_SELECTOR)
-            .next()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?;
-
-        let banner = parsed
-            .select(&PROFILE_BANNER_SELECTOR)
-            .next()
-            .map(|x| x.first_child())
-            .flatten()
-            .map(|x| x.value().as_element())
-            .flatten()
-            .map(|x| x.attr("href").map(ToString::to_string))
-            .flatten()
-            .map(|url| urlencoding::decode(&url.replacen("/pic/", "", 1)).map(|x| x.to_string()))
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?
-            .to_string();
-
-        let profile_picture = parsed
-            .select(&PROFILE_AVATAR_SELECTOR)
-            .next()
-            .map(|x| x.value().attr("href").map(ToString::to_string))
-            .flatten()
-            .map(|url| urlencoding::decode(&url.replacen("/pic/", "", 1)).map(|x| x.to_string()))
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?
-            .to_string();
-
-        let bio = parsed
-            .select(&PROFILE_LOCATION_SELECTOR)
-            .next()
-            .map(|x| x.children().next().map(|elem| elem.value().as_text()))
-            .flatten()
-            .flatten()
-            .map(|text| text.text.to_string())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?;
-
-        let location = parsed
-            .select(&PROFILE_LOCATION_SELECTOR)
-            .next()
-            .map(|x| x.children().nth(1))
-            .flatten()
-            .map(|x| x.value().as_text())
-            .flatten()
-            .map(|x| x.to_string())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?;
-
-        let website = parsed
-            .select(&PROFILE_WEBSITE_SELECTOR)
-            .next()
-            .map(|x| x.children().next().map(|c| c.last_child()))
-            .flatten()
-            .flatten()
-            .map(|x| {
-                x.value()
-                    .as_element()
-                    .map(|elem| elem.attr("href").map(ToString::to_string))
-            })
-            .flatten()
-            .flatten()
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?;
-
-        let joindate = parsed
-            .select(&PROFILE_JOINDATE_SELECTOR)
-            .next()
-            .map(|x| x.value().attr("title"))
-            .flatten()
-            .map(|datestr| DateTime::parse_from_str(datestr, JOINDATE_STR))
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?;
-
-        let tweets = parsed
-            .select(&PROFILE_POSTS_SELECTOR)
-            .next()
-            .map(|x| x.select(&PROFILE_STATS_SELECTOR).next())
-            .flatten()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .parse::<u64>()
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?;
-
-        let followers = parsed
-            .select(&PROFILE_FOLLOWERS_SELECTOR)
-            .next()
-            .map(|x| x.select(&PROFILE_STATS_SELECTOR).next())
-            .flatten()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .parse::<u64>()
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?;
-
-        let follows = parsed
-            .select(&PROFILE_FOLLOWING_SELECTOR)
-            .next()
-            .map(|x| x.select(&PROFILE_STATS_SELECTOR).next())
-            .flatten()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .parse::<u64>()
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?;
-
-        let likes = parsed
-            .select(&PROFILE_LIKES_SELECTOR)
-            .next()
-            .map(|x| x.select(&PROFILE_STATS_SELECTOR).next())
-            .flatten()
-            .map(|x| x.inner_html())
-            .ok_or(TwitterApiError::Scrape("Element is null".to_string()))?
-            .parse::<u64>()
-            .map_err(|why| TwitterApiError::Scrape(why.to_string()))?;
-
-        let private = parsed.select(&PROFILE_LIKES_SELECTOR).next().is_some();
-        let verified = parsed.select(&PROFILE_LIKES_SELECTOR).next().is_some();
-
-        Ok(PartialUser {
-            name,
-            username,
-            bio,
-            location,
-            link: website,
-            joindate: DateTime::<Utc>::from(joindate),
-            tweets,
-            profile_picture,
-            following: follows,
-            followers,
-            likes,
-            private,
-            banner_url: banner,
-            verified,
-        })
     }
 
     pub async fn user_timeline(
@@ -238,30 +94,102 @@ impl Scraper {
 
         let parsed = Html::parse_document(&page);
 
+        parsed
+            .select(&TIMELINE_TWEETS_SELECTOR)
+            .map(|timeline_item| {});
+
         Err()
+    }
+
+    pub async fn parse_tweet(tweet: ElementRef<'_>) -> Option<TimelineTweet> {
+        let timeline_value = tweet.value();
+
+        let tweet_link = tweet
+            .select(&TWEET_LINK_SELECTOR)
+            .next()
+            .map(|x| x.value().attr("href").map(ToString::to_string))
+            .flatten();
+        let pinned = tweet.select(&TWEET_PINNED_SELECTOR).next().is_some();
+        let tweet_content = tweet
+            .select(&TWEET_CONTENT_SELECTOR)
+            .next()
+            .map(|x| x.inner_html());
+        let replies = tweet
+            .select(&TWEET_STATS_SELECTOR)
+            .next()
+            .map(|x| {
+                x.first_child().map(|x| {
+                    x.value()
+                        .as_text()
+                        .map(|x| x.deref().to_string().parse().ok())
+                })
+            })
+            .flatten()
+            .flatten()
+            .flatten()
+            .unwrap_or(0);
+        let retweets = tweet
+            .select(&TWEET_STATS_SELECTOR)
+            .next()
+            .map(|x| {
+                x.first_child().map(|x| {
+                    x.value()
+                        .as_text()
+                        .map(|x| x.deref().to_string().parse().ok())
+                })
+            })
+            .flatten()
+            .flatten()
+            .flatten()
+            .unwrap_or(0);
+        let quotes = tweet
+            .select(&TWEET_STATS_SELECTOR)
+            .next()
+            .map(|x| {
+                x.first_child().map(|x| {
+                    x.value()
+                        .as_text()
+                        .map(|x| x.deref().to_string().parse().ok())
+                })
+            })
+            .flatten()
+            .flatten()
+            .flatten()
+            .unwrap_or(0);
+        let likes = tweet
+            .select(&TWEET_STATS_SELECTOR)
+            .next()
+            .map(|x| {
+                x.first_child().map(|x| {
+                    x.value()
+                        .as_text()
+                        .map(|x| x.deref().to_string().parse().ok())
+                })
+            })
+            .flatten()
+            .flatten()
+            .flatten()
+            .unwrap_or(0);
+
+        let tweet_date = tweet
+            .select(&TWEET_DATE_SELECTOR)
+            .next()
+            .map(|x| x.first_child().map(|x| x.value().as_element()))
+            .flatten()
+            .flatten()
+            .map(|x| x.attr("title"))
+            .flatten()
+            .map(|datestr| NaiveDateTime::parse_from_str(datestr, TWEETDATE_STR).ok())
+            .flatten()
+            .map(|naive| DateTime::<Utc>::from_local(naive, Utc));
+
+        Err(())
     }
 }
 
-pub struct PartialUser {
-    pub name: String,
-    pub username: String,
-    pub bio: String,
-    pub location: String,
-    pub link: String,
-    pub joindate: DateTime<Utc>,
-    pub tweets: u64,
-    pub profile_picture: String,
-    pub following: u64,
-    pub followers: u64,
-    pub likes: u64,
-    pub private: bool,
-    pub banner_url: String,
-    pub verified: bool,
-}
-
 pub struct TimelineTweet {
-    pub user: String,
     pub id: u64,
+    pub pinned: bool,
     pub is_retweet: bool,
     pub is_thread: bool,
     pub quote_retweet: Option<u64>,
@@ -272,4 +200,5 @@ pub struct TimelineTweet {
     pub qrts: u64,
     pub replies: u64,
     pub attachments: bool,
+    pub content: String,
 }
