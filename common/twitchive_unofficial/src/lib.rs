@@ -36,8 +36,11 @@ static TWEET_CONTENT_SELECTOR: Selector = Selector::parse("tweet-content media-b
 static TWEET_PINNED_SELECTOR: Selector = Selector::parse("pinned").unwrap();
 static TWEET_UNAVAILABLE_SELECTOR: Selector = Selector::parse("unavailable-box").unwrap();
 static TWEET_RETAIL_SELECTOR: Selector = Selector::parse("retweet-header").unwrap();
+static TWEET_ATTACHMENT_SELECTOR: Selector = Selector::parse("attachments").unwrap();
 static TWEET_DATE_SELECTOR: Selector = Selector::parse("tweet-date").unwrap();
 static THREAD_SHOW_SELECTOR: Selector = Selector::parse("show-thread").unwrap();
+static THREAD_MAIN_SELECTOR: Selector = Selector::parse("#m").unwrap();
+static THREAD_REPLYING_TO: Selector = Selector::parse("replying-to").unwrap();
 
 const JOINDATE_STR: &str = "%R %p - %e %b %Y";
 const TWEETDATE_STR: &str = "%b %e, %Y · %R%p UTC";
@@ -101,19 +104,38 @@ impl Scraper {
         Err()
     }
 
-    pub async fn parse_tweet(tweet: ElementRef<'_>) -> Option<TimelineTweet> {
-        let timeline_value = tweet.value();
+    pub fn parse_tweet_reply(html: &Html, tweetlink: String) -> Option<(Tweet, bool)> {
 
+
+        let (mut main_tweet, attachments) = Self::parse_tweet_nonreply(tweet)?;
+
+        // find "replying to"
+        let
+    }
+
+    pub fn parse_tweet_nonreply(tweet: ElementRef<'_>) -> Option<(Tweet, bool)> {
         let tweet_link = tweet
             .select(&TWEET_LINK_SELECTOR)
             .next()
-            .map(|x| x.value().attr("href").map(ToString::to_string))
-            .flatten();
+            .map(|x| {
+                x.value().attr("href").map(|x| {
+                    x.split('/')
+                        .last()
+                        .map(|x| x.split("#m").next().map(str::parse::<u64>).map(Result::ok))
+                })
+            })
+            .flatten()
+            .flatten()
+            .flatten()
+            .flatten()?;
+
         let pinned = tweet.select(&TWEET_PINNED_SELECTOR).next().is_some();
+
         let tweet_content = tweet
             .select(&TWEET_CONTENT_SELECTOR)
             .next()
-            .map(|x| x.inner_html());
+            .map(|x| x.inner_html())
+            .unwrap_or(String::new());
         let replies = tweet
             .select(&TWEET_STATS_SELECTOR)
             .next()
@@ -181,24 +203,45 @@ impl Scraper {
             .flatten()
             .map(|datestr| NaiveDateTime::parse_from_str(datestr, TWEETDATE_STR).ok())
             .flatten()
-            .map(|naive| DateTime::<Utc>::from_local(naive, Utc));
+            .map(|naive| DateTime::<Utc>::from_local(naive, Utc))
+            .unwrap_or(Utc::now());
 
-        Err(())
+        let tweet_has_attachments = tweet.select(&TWEET_ATTACHMENT_SELECTOR).next().is_some();
+
+        Some((
+            Tweet {
+                id: tweet_link,
+                content: tweet_content,
+                reply_tweet_id: None,
+                reply_users: None,
+                replies,
+                quotes,
+                retweets,
+                likes,
+                posted: tweet_date,
+                has_attachments: tweet_has_attachments,
+            },
+            pinned,
+        ))
     }
 }
 
-pub struct TimelineTweet {
+pub struct Timeline {
+    pub pinned_tweet: Option<Tweet>,
+    pub tweets: Vec<Tweet>,
+}
+
+pub struct Tweet {
     pub id: u64,
-    pub pinned: bool,
-    pub is_retweet: bool,
-    pub is_thread: bool,
-    pub quote_retweet: Option<u64>,
-    pub reply_to: Option<Vec<u64>>,
-    pub date: DateTime<Utc>,
-    pub likes: u64,
-    pub retweets: u64,
-    pub qrts: u64,
-    pub replies: u64,
-    pub attachments: bool,
     pub content: String,
+    pub reply_tweet_id: Option<u64>,
+    pub reply_users: Option<Vec<String>>,
+
+    pub replies: u64,
+    pub quotes: u64,
+    pub retweets: u64,
+    pub likes: u64,
+
+    pub posted: DateTime<Utc>,
+    pub has_attachments: bool,
 }
