@@ -6,3 +6,29 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+fantoccini = "0.20.0-rc.3"
+lapin = "2.1.1"
+deadpool-lapin = "0.10.0"
+toml = "0.5.9"
+
+[dependencies.serde]
+version = "1.0.147"
+features = ["derive"]
+
+[dependencies.rkyv]
+version = "0.7.39"
+features = ["validation"]
+
+[dependencies.deadpool]
+version = "0.9.5"
+features = ["rt_tokio_1", "serde"]
+
+[dependencies.tokio]
+version = "1.21.2"
+features = ["full"]
+
+[dependencies.twtscrape]
+path = "../../common/twtscrape"
+
+[dependencies.tweetchive_core]
+path = "../../common/tweetchive_core"
