@@ -3,12 +3,14 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/common/dbtypes/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/twitter_worker/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/services/twtchive-server/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/common/twitchive_unofficial/src" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/services/twtchive-server/target" />
+      <sourceFolder url="file://$MODULE_DIR$/common/tweeitchive_unofficial/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/common/tweetchive_core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/common/twtscrape/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/services/tweetchive_scraper/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/services/tweetchive_server/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
+      <excludeFolder url="file://$MODULE_DIR$/services/tweetchive_server/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

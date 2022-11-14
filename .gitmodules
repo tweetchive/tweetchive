@@ -1,0 +1,3 @@
+[submodule "common/twtscrape"]
+	path = common/twtscrape
+	url = git@github.com:tweetchive/twtscrape.git
