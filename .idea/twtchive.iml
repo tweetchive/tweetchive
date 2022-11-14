@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="Go" enabled="true" />
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
@@ -9,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/common/twtscrape/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/tweetchive_scraper/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/services/tweetchive_server/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/services/tweetchive_aggregation/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
       <excludeFolder url="file://$MODULE_DIR$/services/tweetchive_server/target" />
     </content>
