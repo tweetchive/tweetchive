@@ -6,8 +6,8 @@ use tokio::io::AsyncReadExt;
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct Config {
-    pub rabbit: String,
     pub machine_name: String,
+    pub ssk: String,
     pub worker: Worker,
     pub accounts: Vec<Account>,
 }
