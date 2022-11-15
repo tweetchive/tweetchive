@@ -1,5 +1,6 @@
-mod sql;
-mod custom_diff;
+pub mod sql;
+pub mod custom_diff;
+pub mod rabbitmq;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

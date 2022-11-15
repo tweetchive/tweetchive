@@ -9,7 +9,10 @@ pub struct Config {
     pub machine_name: String,
     pub ssk: String,
     pub worker: Worker,
+    pub rabbitmq: RabbitMQ,
     pub accounts: Vec<Account>,
+    pub twitters: Vec<Twitter>,
+    pub proxys: Vec<Proxy>,
 }
 
 impl Config {
@@ -35,12 +38,25 @@ pub struct Worker {
 pub struct Account {
     pub username: String,
     pub password: String,
-    pub assigned_proxy: Option<Proxy>,
+    pub assigned_proxy: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct Proxy {
+    pub name: String,
     pub ip: String,
     pub username: String,
     pub password: String,
+}
+
+#[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+pub struct Twitter {
+    pub key: String,
+    pub assigned_proxy: Option<String>,
+}
+
+#[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+pub struct RabbitMQ {
+    pub address: String,
+    pub pool_size: u32,
 }

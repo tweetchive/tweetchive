@@ -20,8 +20,13 @@ tikv-jemallocator = "0.5.0"
 chrono = "0.4.23"
 seahash = "4.1.0"
 uuid = "1.2.1"
-actix = "0.13.0"
-actix-rt = "2.7"
+axum = "0.6.0-rc.4"
+once_cell = "1.16.0"
+thiserror = "1.0.37"
+
+[dependencies.twitter-v2]
+version = "0.1.8"
+features = ["rustls-tls"]
 
 [dependencies.opentelemetry]
 version = "0.18.0"
@@ -50,6 +55,10 @@ features = ["full"]
 [dependencies.flume]
 version = "0.10.14"
 features = ["async"]
+
+[dependencies.nanorand]
+version = "0.7.0"
+features = ["getrandom"]
 
 [dependencies.twtscrape]
 path = "../../common/twtscrape"
