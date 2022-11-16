@@ -1,13 +1,16 @@
 use crate::config::{Account, Proxy};
 use ahash::HashMap;
 use color_eyre::{Report, Result};
+use dashmap::DashMap;
 use fantoccini::wd::Capabilities;
 use fantoccini::{ClientBuilder, Locator};
 use serde_json::json;
+use std::sync::Arc;
 use std::time::Duration;
 use tokio::time::sleep;
 use tracing::instrument;
 
+pub const BROWSER_LOCATION: &str = "localhost:4444";
 pub const TWITTER_LOGIN: &str = "https://twitter.com/i/flow/login";
 pub const TWITTER_HOME: &str = "https://twitter.com/home";
 pub const HOME: &str = "about:home";
@@ -20,15 +23,13 @@ pub const MAX_WAIT_SECS: Duration = Duration::from_secs(10);
 
 #[instrument]
 pub async fn log_in_using_browser(
-    url: impl AsRef<str>,
     account: &Account,
-    proxies: &HashMap<String, Proxy>,
+    proxies: Arc<DashMap<String, Proxy>>,
 ) -> Result<HashMap<String, String>> {
     // connect to browser
     let mut browbuild = ClientBuilder::rustls();
     let mut caps = Capabilities::new();
 
-    url.delete_all_cookies().await?;
     if let Some(proxy) = &account.assigned_proxy {
         let proxy = proxies.get(proxy).ok_or(Report::msg("no proxy"))?;
         let ip = &proxy.ip;
@@ -43,7 +44,8 @@ pub async fn log_in_using_browser(
 
     browbuild.capabilities(caps);
 
-    let browser = browbuild.connect(url.as_ref()).await?;
+    let browser = browbuild.connect(BROWSER_LOCATION).await?;
+    browser.delete_all_cookies().await?;
     browser.goto(TWITTER_LOGIN).await?;
     browser
         .wait()
