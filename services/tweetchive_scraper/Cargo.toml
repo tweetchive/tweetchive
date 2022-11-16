@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fantoccini = "0.20.0-rc.3"
 lapin = "2.1.1"
 deadpool-lapin = "0.10.0"
 toml = "0.5.9"
@@ -18,11 +17,14 @@ tracing = "0.1.37"
 ahash = "0.8.2"
 tikv-jemallocator = "0.5.0"
 chrono = "0.4.23"
-seahash = "4.1.0"
+sha2 = "0.10.6"
 uuid = "1.2.1"
 axum = "0.6.0-rc.4"
 once_cell = "1.16.0"
 thiserror = "1.0.37"
+memmap2 = "0.5.8"
+oxipng = "6.0.1"
+serde_json = "1.0.87"
 
 [dependencies.twitter-v2]
 version = "0.1.8"
@@ -59,6 +61,19 @@ features = ["async"]
 [dependencies.nanorand]
 version = "0.7.0"
 features = ["getrandom"]
+
+[dependencies.rust-s3]
+version = "0.33.0-beta4"
+default-features = false
+features = ["tokio-rustls-tls", "tags", "fail-on-err"]
+
+[dependencies.async-compression]
+version = "0.3.15"
+features = ["tokio", "zstd", "brotli"]
+
+[dependencies.fantoccini]
+version = "0.20.0-rc.3"
+features = ["rustls-tls"]
 
 [dependencies.twtscrape]
 path = "../../common/twtscrape"

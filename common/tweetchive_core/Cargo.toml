@@ -5,17 +5,42 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[features]
+default = ["server"]
+server = ["couch_rs", "sea-query"]
+web = []
+
 [dependencies]
-ahash = "0.8.1"
+ahash = "0.8"
+serde_json = "1.0"
 
 [dependencies.couch_rs]
-version = "0.9.0"
+version = "0.9"
 features = ["derive", "rustls-tls"]
+optional = true
 
-[dependencies.sea-orm]
-version = "0.10.1"
-features = ["macros", "with-chrono", "with-json", "with-uuid"]
+[dependencies.sea-query]
+version = "0.27.2"
+features = ["derive", "attr", "thread-safe", "backend-postgres", "with-chrono", "with-uuid", "with-json", "with-ipnetwork", "postgres-array", "postgres-interval"]
+optional = true
 
 [dependencies.serde]
-version = "1.0.147"
+version = "1.0"
 features = ["derive"]
+
+[dependencies.chrono]
+version = "0.4"
+features = ["serde", "rkyv"]
+
+[dependencies.uuid]
+version = "1.2"
+fetures = ["serde", "v8"]
+
+[dependencies.rkyv]
+version = "0.7.39"
+features = ["validation", "uuid"]
+
+[dependencies.twtscrape]
+path = "../twtscrape"
+default-features = false
+features = ["onlytypes"]

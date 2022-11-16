@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::{Account, Config, Proxy};
 use crate::pools::TwitterScraperManager;
 use color_eyre::Result;
 use deadpool::managed::{Object, Pool};
@@ -8,7 +8,7 @@ use nanorand::WyRand;
 use opentelemetry::sdk::export::trace::stdout;
 use std::sync::Arc;
 use tikv_jemallocator::Jemalloc;
-use tokio::sync::{Mutex, RwLock};
+use tokio::sync::{Mutex, OnceCell, RwLock};
 use tracing::instrument;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
@@ -21,15 +21,24 @@ mod error;
 mod pools;
 mod routes;
 mod user;
+mod browser;
 
 pub struct AppState {
     pub config: RwLock<Config>,
+    pub rabbitmq: LapinPool,
+    pub account_pool: Pool<TwitterScraperManager, Object<Scraper>>
 }
+
+pub static STATE: Arc<OnceCell<AppState>>  = Arc::new(OnceCell::new());
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // config
     let config = Arc::new(Config::load().await?);
+
+    // log into these accounts
+
+
 
     // instrumentation
     let tracer = stdout::new_pipeline().install_simple();
@@ -54,7 +63,7 @@ async fn main() -> Result<()> {
 }
 
 #[instrument]
-pub async fn init_rabbitmq(pool: LapinPool) -> Result<()> {
+pub async fn init_rabbitmq(pool: LapinPool) -> Result<LapinPool> {
     let rmq_con = pool.get().await.map_err(|e| {
         eprintln!("could not get rmq con: {}", e);
         e
@@ -62,5 +71,7 @@ pub async fn init_rabbitmq(pool: LapinPool) -> Result<()> {
 
     let channel = rmq_con.create_channel().await?;
 
-    let task_queue = 
+    let task_queue = channel.queue_declare(
+        ""
+    )
 }
