@@ -1,7 +1,6 @@
+use crate::browser::log_in_using_browser;
 use crate::config::{Account, Proxy};
-use crate::AppState;
 use color_eyre::Report;
-use dashmap::mapref::one::Ref;
 use dashmap::DashMap;
 use deadpool::managed::RecycleResult;
 use deadpool::{async_trait, managed};
@@ -10,7 +9,6 @@ use std::sync::Arc;
 use tokio::sync::{Mutex, RwLock};
 use tracing::{error, instrument};
 use twtscrape::scrape::{Scraper, ScraperBuilder};
-use crate::browser::log_in_using_browser;
 
 const STATUS_CHECK_URL: &str = "https://twitter.com/i/api/graphql/iugWi6fZBxE7Qzt_5PiIYw/Viewer?variables=%7B%22withCommunitiesMemberships%22%3Atrue%2C%22withCommunitiesCreation%22%3Atrue%2C%22withSuperFollowsUserFields%22%3Atrue%7D&features=%7B%22responsive_web_twitter_blue_verified_badge_is_enabled%22%3Atrue%2C%22verified_phone_label_enabled%22%3Afalse%2C%22responsive_web_graphql_timeline_navigation_enabled%22%3Atrue%7D";
 
@@ -41,7 +39,11 @@ impl managed::Manager for TwitterScraperManager {
 
         if let Some(assigned) = &account.assigned_proxy {
             match self.proxies.get(assigned) {
-                Some(p) => scraper_bld.with_proxy(p.ip.to_string()), // FIXME: Basic Credentials
+                Some(p) => {
+                    scraper_bld = scraper_bld.with_proxy(p.ip.to_string());
+                    scraper_bld = scraper_bld
+                        .with_proxy_authentication(p.username.clone(), p.password.clone())
+                } // FIXME: Basic Credentials
                 None => {
                     let username = account.username.clone();
                     let proxy = assigned.clone();
@@ -51,7 +53,9 @@ impl managed::Manager for TwitterScraperManager {
             }
         }
 
-        let cookies = log_in_using_browser()
+        let cookies = log_in_using_browser(account, self.proxies.clone()).await?;
+        scraper_bld = scraper_bld.with_cookies(cookies);
+        scraper_bld = scraper_bld.with_ua("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36".to_string());
 
         let scraper = scraper_bld.finish().await?;
         // status check
@@ -79,9 +83,25 @@ impl managed::Manager for AnonymousScraperManager {
 
     async fn create(&self) -> Result<Self::Type, Self::Error> {
         let mut scraperbld = ScraperBuilder::new();
+        scraperbld = scraper_bld.with_ua("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36".to_string());
+        let random_v = self.proxies.iter().collect::<Vec<_>>();
+        let rng = self.rng.lock().await.generate_range(0..random_v.len());
+        scraperbld = scraperbld.with_proxy(random_v[rng].ip.clone());
+        scraperbld = scraperbld.with_proxy_authentication(
+            random_v[rng].username.clone(),
+            random_v[rng].password.clone(),
+        );
+
+        let scraper = scraper_bld.finish().await?;
+        // status check
+        let req_status_check = scraper.make_get_req(STATUS_CHECK_URL);
+        scraper.api_req_raw_request(req_status_check).await?;
+        Ok(scraper)
     }
 
     async fn recycle(&self, obj: &mut Self::Type) -> RecycleResult<Self::Error> {
-        todo!()
+        let req_status_check = obj.make_get_req(STATUS_CHECK_URL);
+        obj.api_req_raw_request(req_status_check).await?;
+        Ok(())
     }
 }

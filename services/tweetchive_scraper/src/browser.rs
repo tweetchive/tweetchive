@@ -45,6 +45,7 @@ pub async fn log_in_using_browser(
     browbuild.capabilities(caps);
 
     let browser = browbuild.connect(BROWSER_LOCATION).await?;
+    browser.set_ua("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
     browser.delete_all_cookies().await?;
     browser.goto(TWITTER_LOGIN).await?;
     browser

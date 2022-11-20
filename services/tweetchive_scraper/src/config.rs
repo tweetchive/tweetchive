@@ -10,6 +10,7 @@ pub struct Config {
     pub ssk: String,
     pub worker: Worker,
     pub rabbitmq: RabbitMQ,
+    pub s3: S3Bucket,
     pub accounts: Vec<Account>,
     pub twitters: Vec<Twitter>,
     pub proxys: Vec<Proxy>,
@@ -59,4 +60,11 @@ pub struct Twitter {
 pub struct RabbitMQ {
     pub address: String,
     pub pool_size: u32,
+}
+
+#[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
+pub struct S3Bucket {
+    pub end_point: String,
+    pub name: String,
+    pub region: String,
 }

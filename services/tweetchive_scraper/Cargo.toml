@@ -26,6 +26,8 @@ memmap2 = "0.5.8"
 oxipng = "6.0.1"
 serde_json = "1.0.87"
 dashmap = "5.4.0"
+futures = "0.3.25"
+bytes = "1.2.1"
 
 [dependencies.twitter-v2]
 version = "0.1.8"
@@ -64,7 +66,7 @@ version = "0.7.0"
 features = ["getrandom"]
 
 [dependencies.rust-s3]
-version = "0.33.0-beta4"
+version = "0.32.3"
 default-features = false
 features = ["tokio-rustls-tls", "tags", "fail-on-err"]
 
@@ -76,8 +78,18 @@ features = ["tokio", "zstd", "brotli"]
 version = "0.20.0-rc.3"
 features = ["rustls-tls"]
 
+[dependencies.youtube_dl]
+version = "0.7.0"
+features = ["tokio", "yt-dlp"]
+
+[dependencies.reqwest]
+version = "0.11"
+default-features = false
+features = ["json", "socks", "cookies", "gzip", "brotli", "rustls-tls", "deflate"]
+
 [dependencies.twtscrape]
 path = "../../common/twtscrape"
 
 [dependencies.tweetchive_core]
 path = "../../common/tweetchive_core"
+features = ["server"]

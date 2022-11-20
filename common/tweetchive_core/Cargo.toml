@@ -7,7 +7,7 @@ edition = "2021"
 
 [features]
 default = ["server"]
-server = ["couch_rs", "sea-query"]
+server = ["couch_rs", "sea-orm"]
 web = []
 
 [dependencies]
@@ -19,9 +19,9 @@ version = "0.9"
 features = ["derive", "rustls-tls"]
 optional = true
 
-[dependencies.sea-query]
-version = "0.27.2"
-features = ["derive", "attr", "thread-safe", "backend-postgres", "with-chrono", "with-uuid", "with-json", "with-ipnetwork", "postgres-array", "postgres-interval"]
+[dependencies.sea-orm]
+version = "0.10"
+features = ["macros", "with-chrono", "with-json", "with-uuid"]
 optional = true
 
 [dependencies.serde]
@@ -34,7 +34,7 @@ features = ["serde", "rkyv"]
 
 [dependencies.uuid]
 version = "1.2"
-fetures = ["serde", "v8"]
+features = ["serde", "v8"]
 
 [dependencies.rkyv]
 version = "0.7.39"
