@@ -22,5 +22,7 @@ pub struct Tweet {
     #[serde(skip_serializing_if = "String::is_empty")]
     pub _rev: String,
     pub conversation_id: u64,
+    pub quoting_id: HashMap<Uuid, u64>,
+    pub reply_to: u64,
     pub data: HashMap<Uuid, TweetType>,
 }

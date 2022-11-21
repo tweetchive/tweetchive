@@ -1,11 +1,14 @@
+use crate::browser::USER_AGENT;
+use crate::media::{download_image_media, download_video_media, upload};
 use crate::AppState;
-use ahash::RandomState;
+use ahash::{HashMap, HashMapExt, RandomState};
+use chrono::Utc;
 use dashmap::DashMap;
 use futures::future::join_all;
 use std::sync::Arc;
-use chrono::Utc;
 use tokio::join;
 use tracing::{instrument, warn};
+use tweetchive_core::rabbitmq::{ArchivedMedia, ArchivedUser, ArchivedUserData, MediaType};
 use twtscrape::error::SResult;
 use twtscrape::follow::{FollowType, Follows};
 use twtscrape::search::Search;
@@ -13,7 +16,6 @@ use twtscrape::tweet::{Tweet, TweetType};
 use twtscrape::user::User;
 use twtscrape::usertweets::UserTweetsAndReplies;
 use uuid::Uuid;
-use tweetchive_core::rabbitmq::{ArchivedUser, ArchivedUserData};
 
 #[instrument]
 pub async fn archive_user(state: Arc<AppState>, archive: Uuid, user: u64) -> SResult<()> {
@@ -135,27 +137,94 @@ pub async fn archive_user(state: Arc<AppState>, archive: Uuid, user: u64) -> SRe
         user_map.insert(u.id, u);
     }
 
+    let mut media_map = HashMap::new();
+
     for a in tweet_map.iter() {
         if let TweetType::Tweet(data) = &a {
             for media in &data.entry.media {
+                if let None = media_map.get(&media.media_key) {
+                    let media_type = media.r#type.to_lowercase();
+                    let dlinfo: (String, impl AsRef<[u8]>) = if media_type.contains("video")
+                        || media_type.contains("gif")
+                    {
+                        let download =
+                            match download_video_media(USER_AGENT, &media.expanded_url).await {
+                                Ok(dl) => dl,
+                                Err(why) => {
+                                    warn!(
+                                        media = media_type,
+                                        url = media.media_key,
+                                        error = why,
+                                        "Error Downloading"
+                                    );
+                                    continue;
+                                }
+                            };
+                        (download.content_type, download.data)
+                    } else if media_type.contains("picture") || media_type.contains("image") {
+                        let download =
+                            match download_image_media(scraper.as_ref(), &media.expanded_url).await
+                            {
+                                Ok(dl) => dl,
+                                Err(why) => {
+                                    warn!(
+                                        media = media_type,
+                                        url = media.media_key,
+                                        error = why,
+                                        "Error Downloading"
+                                    );
+                                    continue;
+                                }
+                            };
+                        (download.content_type, download.data)
+                    } else {
+                        warn!(
+                            media = media_type,
+                            url = media.media_key,
+                            "Unknown Media Type, Skipping"
+                        );
+                        continue;
+                    };
+                    if let Err(_) =
+                        upload(state.clone(), &media.media_key, &dlinfo.0, dlinfo.1).await
+                    {
+                        warn!(media = media_type, url = media.media_key, "Error Uploading");
+                        continue;
+                    }
 
+                    let media_archive = ArchivedMedia {
+                        archival_id: archive,
+                        media_id: media.media_key.clone(),
+                        media_type: if media_type.contains("video") {
+                            MediaType::Video
+                        } else {
+                            MediaType::Gif
+                        },
+                        content_type: dlinfo.0,
+                        retrieved: Utc::now(),
+                    };
+                    media_map.insert(media.media_key.clone(), media_archive);
+                }
             }
         }
     }
 
-    state.user_done_channel.sender.clone().send_async(
-        ArchivedUser {
+    state
+        .user_done_channel
+        .sender
+        .clone()
+        .send_async(ArchivedUser {
             archival_id: archive,
-            user: Ok(
-                ArchivedUserData {
-                    user: user_archive,
-                    others: user_map.into_iter().map(|x| x.1).collect(),
-                    tweets: tweet_map.into_iter().map(|x| x.1).collect(),
-                    media: vec![]
-                }
-            ),
-            retrieved: Utc::now()
-        }
-    )
+            user: Ok(ArchivedUserData {
+                user: user_archive,
+                others: user_map.into_iter().map(|x| x.1).collect(),
+                tweets: tweet_map.into_iter().map(|x| x.1).collect(),
+                media: media_map.into_iter().map(|x| x.1).collect(),
+                followers: followers.data,
+                following: following.data,
+            }),
+            retrieved: Utc::now(),
+        })
+        .await?;
     Ok(())
 }

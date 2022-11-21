@@ -1,3 +1,4 @@
+use crate::AppState;
 use ahash::RandomState;
 use dashmap::DashMap;
 use std::fmt::Display;
@@ -8,21 +9,28 @@ use twtscrape::scrape::Scraper;
 use twtscrape::tweet::{Tweet, TweetType};
 use twtscrape::user::User;
 use twtscrape::TwitterIdType;
+use uuid::Uuid;
 
 #[instrument]
-pub async fn archive_tweet(
-    scraper: &Scraper,
-    tweet_id: impl TwitterIdType + Display,
-    tweets: Arc<DashMap<u64, Tweet, RandomState>>,
-    users: Arc<DashMap<u64, User, RandomState>>,
-) -> SResult<()> {
-    let (mut first_twt, mut first_usr) = Tweet::parse_thread(scraper, tweet_id).await?;
-    
-    
+pub async fn archive_tweet(state: Arc<AppState>, archival_id: Uuid, tweet_id: u64) -> SResult<()> {
+    let scraper = state.account_pool.get().await?;
+
+    let mut tweet_map = Arc::new(DashMap::with_capacity_and_hasher(
+        tweets.tweets.len(),
+        RandomState::new(),
+    ));
+    let mut user_map = Arc::new(DashMap::with_capacity_and_hasher(
+        tweets.users.len(),
+        RandomState::new(),
+    ));
+
+    let (mut first_twt, mut first_usr) = Tweet::parse_thread(scraper.as_ref(), tweet_id).await?;
+
     for ftwts in first_twt {
         if let TweetType::Tweet(data) = &ftwts {
             if let Some(quote) = data.reply_info.quoting {
-                let (quoted_twts, quoted_users) = Tweet::parse_thread(scraper, quote).await?;
+                let (quoted_twts, quoted_users) =
+                    Tweet::parse_thread(scraper.as_ref(), quote).await?;
                 for twt in quoted_twts {
                     tweets.insert(twt.id, twt);
                 }

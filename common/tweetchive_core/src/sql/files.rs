@@ -5,9 +5,15 @@ use uuid::Uuid;
 #[sea_orm(table_name = "files")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: u64,
+    pub id: Uuid,
+    #[sea_orm(unique, indexed)]
+    pub media_key: String,
     pub sha_256_digest: Vec<u8>,
     pub large: bool,
+    #[sea_orm(column_type = "Text")]
+    pub original_url: String,
+    #[sea_orm(column_type = "Text")]
+    pub mime_type: String,
     #[sea_orm(column_type = "Text")]
     pub url: String,
     pub snapshot_id: Uuid,

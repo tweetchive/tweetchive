@@ -31,6 +31,7 @@ mod pools;
 mod routes;
 mod tweet;
 mod user;
+mod export;
 
 pub struct AppState {
     pub config: RwLock<Config>,

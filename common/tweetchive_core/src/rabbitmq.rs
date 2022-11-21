@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use rkyv::{Archive, Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use twtscrape::tweet::{Media, Tweet};
 use twtscrape::user::User;
 use uuid::Uuid;
@@ -66,6 +67,8 @@ pub struct ArchivedUserData {
     pub others: Vec<User>,
     pub tweets: Vec<Tweet>,
     pub media: Vec<u64>,
+    pub followers: Vec<User>,
+    pub following: Vec<User>,
 }
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
@@ -85,21 +88,37 @@ pub struct ArchivedTweetData {
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
 pub struct ArchivedMedia {
     pub archival_id: Uuid,
-    pub media_id: u64,
-    pub media_hash: [u8; 32],
-    pub name: String,
-    pub compressed: bool,
+    pub media_id: String,
     pub media_type: MediaType,
-    pub media: Media,
-    pub original_size: u64,
+    pub content_type: String,
     pub retrieved: DateTime<Utc>,
 }
 
-#[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
+#[derive(Copy, Clone, Debug, Hash, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
 pub enum MediaType {
     Picture,
     Gif,
     Video,
+}
+
+impl Display for MediaType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                MediaType::Picture => {
+                    "Picture"
+                }
+                MediaType::Gif => {
+                    "Gif"
+                }
+                MediaType::Video => {
+                    "Video"
+                }
+            }
+        )
+    }
 }
 
 // control

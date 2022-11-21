@@ -20,7 +20,7 @@ pub const NEXT_SELECT: Locator<'static> = Locator::Css("div[role=\"button\"][tab
 pub const LOGIN_SELECT: Locator<'static> =
     Locator::Css("div[role=\"button\"][tabindex=\"0\"][testid=\"LoginForm_Login_Button\"]");
 pub const MAX_WAIT_SECS: Duration = Duration::from_secs(10);
-
+pub const USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36";
 #[instrument]
 pub async fn log_in_using_browser(
     account: &Account,
@@ -45,7 +45,7 @@ pub async fn log_in_using_browser(
     browbuild.capabilities(caps);
 
     let browser = browbuild.connect(BROWSER_LOCATION).await?;
-    browser.set_ua("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36");
+    browser.set_ua(USER_AGENT);
     browser.delete_all_cookies().await?;
     browser.goto(TWITTER_LOGIN).await?;
     browser
