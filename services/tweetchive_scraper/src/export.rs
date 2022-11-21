@@ -26,8 +26,9 @@ pub async fn upload_done_user(state: Arc<AppState>) {
                     continue;
                 }
                 let data = enc.into_inner();
-                
+
                 // TODO: Send to RabbitMQ
+                let
             }
             Err(why) => {
                 warn!(error = why, "Receiving User Dones");

@@ -34,13 +34,8 @@ pub struct ArchivalRequest {
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
 pub enum ArchivalType {
-    User {
-        user: String,
-        previous: Option<ArchiveUserPrevious>,
-    },
-    TweetThread {
-        tweet_id: u64,
-    },
+    User { user: String },
+    TweetThread { tweet_id: u64 },
 }
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]
@@ -66,7 +61,7 @@ pub struct ArchivedUserData {
     pub user: User,
     pub others: Vec<User>,
     pub tweets: Vec<Tweet>,
-    pub media: Vec<u64>,
+    pub media: Vec<ArchivedMedia>,
     pub followers: Vec<User>,
     pub following: Vec<User>,
 }
@@ -82,7 +77,7 @@ pub struct ArchivedTweets {
 pub struct ArchivedTweetData {
     pub tweets: Vec<Tweet>,
     pub users: Vec<User>,
-    pub media: Vec<u64>,
+    pub media: Vec<ArchivedMedia>,
 }
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize, Archive)]

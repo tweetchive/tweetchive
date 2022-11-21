@@ -64,7 +64,6 @@ pub struct RabbitMQ {
 
 #[derive(Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]
 pub struct S3Bucket {
-    pub end_point: String,
     pub name: String,
     pub region: String,
 }

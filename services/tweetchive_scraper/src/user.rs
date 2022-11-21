@@ -1,6 +1,8 @@
-use crate::browser::USER_AGENT;
-use crate::media::{download_image_media, download_video_media, upload};
-use crate::AppState;
+use crate::{
+    browser::USER_AGENT,
+    media::{download_image_media, download_video_media, upload},
+    AppState,
+};
 use ahash::{HashMap, HashMapExt, RandomState};
 use chrono::Utc;
 use dashmap::DashMap;
@@ -9,16 +11,18 @@ use std::sync::Arc;
 use tokio::join;
 use tracing::{instrument, warn};
 use tweetchive_core::rabbitmq::{ArchivedMedia, ArchivedUser, ArchivedUserData, MediaType};
-use twtscrape::error::SResult;
-use twtscrape::follow::{FollowType, Follows};
-use twtscrape::search::Search;
-use twtscrape::tweet::{Tweet, TweetType};
-use twtscrape::user::User;
-use twtscrape::usertweets::UserTweetsAndReplies;
+use twtscrape::{
+    error::SResult,
+    follow::{FollowType, Follows},
+    search::Search,
+    tweet::{Tweet, TweetType},
+    user::User,
+    usertweets::UserTweetsAndReplies,
+};
 use uuid::Uuid;
 
 #[instrument]
-pub async fn archive_user(state: Arc<AppState>, archive: Uuid, user: u64) -> SResult<()> {
+pub async fn archive_user(state: Arc<AppState>, archive: Uuid, user: String) -> SResult<()> {
     let scraper = state.anon_pool.get().await?;
     let user_archive = User::new(scraper.as_ref(), user).await?;
     let (followers, following) = join!(

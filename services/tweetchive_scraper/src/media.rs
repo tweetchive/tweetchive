@@ -2,7 +2,6 @@ use crate::AppState;
 use bytes::Bytes;
 use color_eyre::{Report, Result};
 use memmap2::{Mmap, MmapOptions};
-use reqwest::{get, Client};
 use sha2::{Digest, Sha256};
 use std::sync::Arc;
 use tracing::{error, instrument};

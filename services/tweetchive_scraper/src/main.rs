@@ -1,24 +1,31 @@
-use crate::config::{Account, Config, Proxy};
+use crate::config::{Config, Proxy};
 use crate::pools::{AnonymousScraperManager, TwitterScraperManager};
+use crate::tweet::archive_tweet;
+use crate::user::archive_user;
 use color_eyre::Result;
 use dashmap::DashMap;
 use deadpool::managed::{Object, Pool};
 use deadpool_lapin::{Manager, Pool as LapinPool};
+use flume::{Receiver, Sender};
+use futures::StreamExt;
 use lapin::options::{BasicConsumeOptions, QueueDeclareOptions};
 use lapin::types::FieldTable;
 use lapin::ConnectionProperties;
 use nanorand::WyRand;
 use opentelemetry::sdk::export::trace::stdout;
+use s3::creds::Credentials;
+use s3::Bucket;
 use sea_orm::DatabaseConnection;
 use std::sync::Arc;
-use flume::{Receiver, Sender};
-use s3::Bucket;
 use tikv_jemallocator::Jemalloc;
-use tokio::sync::{Mutex, OnceCell, RwLock};
+use tokio::sync::{Mutex, RwLock};
+use tracing::log::warn;
 use tracing::{info, instrument};
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::Registry;
-use tweetchive_core::rabbitmq::{ArchivedUser, REQUEST_QUEUE};
+use tweetchive_core::rabbitmq::{
+    ArchivalRequest, ArchivalType, ArchivedTweets, ArchivedUser, REQUEST_QUEUE,
+};
 use twtscrape::scrape::Scraper;
 
 static GLOBAL: Jemalloc = Jemalloc;
@@ -26,12 +33,12 @@ static GLOBAL: Jemalloc = Jemalloc;
 mod browser;
 mod config;
 mod error;
+mod export;
 mod media;
 mod pools;
 mod routes;
 mod tweet;
 mod user;
-mod export;
 
 pub struct AppState {
     pub config: RwLock<Config>,
@@ -44,7 +51,8 @@ pub struct AppState {
 }
 
 pub struct TweetDone {
-    
+    pub receiver: Arc<Receiver<ArchivedTweets>>,
+    pub sender: Arc<Sender<ArchivedTweets>>,
 }
 
 pub struct UserDone {
@@ -73,7 +81,7 @@ async fn main() -> Result<()> {
 
     // rabbitmq
     let rmq_manager = Manager::new(&config.rabbitmq.address, ConnectionProperties::default());
-    let rmq_pool = LapinPool::builder(manager)
+    let rmq_pool = LapinPool::builder(rmq_manager)
         .max_size(config.rabbitmq.pool_size as usize)
         .build()?;
 
@@ -95,20 +103,50 @@ async fn main() -> Result<()> {
         .max_size(config.accounts.len())
         .build()?;
 
-    let s3 =
+    let s3 = Bucket::new(
+        &config.s3.name,
+        config.s3.region.parse().unwrap(),
+        Credentials::new(None, None, None, None, None).unwrap(),
+    )
+    .unwrap();
+
+    let (twt_sender, twt_receiver) = {
+        let (a, b) = flume::unbounded();
+        (Arc::new(a), Arc::new(b))
+    };
+    let (usr_sender, usr_receiver) = {
+        let (a, b) = flume::unbounded();
+        (Arc::new(a), Arc::new(b))
+    };
 
     let state = Arc::new(AppState {
         config: RwLock::new(config),
         rabbitmq: rmq_pool,
         account_pool: scrape_pool,
         anon_pool,
-        s3: ()
+        s3,
+        tweet_done_channel: TweetDone {
+            receiver: twt_receiver,
+            sender: twt_sender,
+        },
+        user_done_channel: UserDone {
+            receiver: usr_receiver,
+            sender: usr_sender,
+        },
     });
+
+    let state_clone = state.clone();
+
+    tokio::task::spawn(async {
+        listen(state_clone).await.expect("wtf listen died???");
+    });
+
+    loop {}
 }
 
 #[instrument]
-pub async fn init_rabbitmq(pool: LapinPool) -> Result<LapinPool> {
-    let rmq_con = pool.get().await.map_err(|e| {
+pub async fn listen(state: Arc<AppState>) -> Result<LapinPool> {
+    let rmq_con = state.rabbitmq.get().await.map_err(|e| {
         eprintln!("could not get rmq con: {}", e);
         e
     })?;
@@ -123,7 +161,7 @@ pub async fn init_rabbitmq(pool: LapinPool) -> Result<LapinPool> {
         )
         .await?;
     info!("Got Queue {REQUEST_QUEUE}");
-    let consumer = channel
+    let mut consumer = channel
         .basic_consume(
             REQUEST_QUEUE,
             "request_eater",
@@ -131,4 +169,48 @@ pub async fn init_rabbitmq(pool: LapinPool) -> Result<LapinPool> {
             FieldTable::default(),
         )
         .await?;
+
+    loop {
+        match consumer.next().await {
+            Some(delivery) => match delivery {
+                Ok(delivery) => {
+                    let request = match rkyv::from_bytes::<ArchivalRequest>(&delivery.data) {
+                        Ok(v) => v,
+                        Err(why) => {
+                            warn!(error = why, "error deserializing request!");
+                            continue;
+                        }
+                    };
+
+                    let state_clone = state.clone();
+                    info!(archive = request.archival_id, "Starting...");
+                    tokio::task::spawn(async move {
+                        let rslt = match request.arc_type {
+                            ArchivalType::User { user } => {
+                                archive_user(state_clone, request.archival_id, user).await
+                            }
+                            ArchivalType::TweetThread { tweet_id } => {
+                                archive_tweet(state_clone, request.archival_id, tweet_id).await
+                            }
+                        };
+
+                        if let Err(why) = rslt {
+                            warn!(error = why, archive = request.archival_id, "Task Failed");
+                            return;
+                        }
+
+                        info!(archive = request.archival_id, "Task Successful");
+                    })
+                }
+                Err(why) => {
+                    warn!(error = why, "bad delivery!");
+                    continue;
+                }
+            },
+            None => {
+                warn!("no delivery!");
+                continue;
+            }
+        }
+    }
 }
