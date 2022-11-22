@@ -2,6 +2,8 @@ use crate::config::{Config, Proxy};
 use crate::pools::{AnonymousScraperManager, TwitterScraperManager};
 use crate::tweet::archive_tweet;
 use crate::user::archive_user;
+use axum::handler::Handler;
+use axum::{Router, Server};
 use color_eyre::Result;
 use dashmap::DashMap;
 use deadpool::managed::{Object, Pool};
@@ -34,6 +36,7 @@ mod browser;
 mod config;
 mod error;
 mod export;
+mod health;
 mod media;
 mod pools;
 mod routes;
@@ -141,7 +144,13 @@ async fn main() -> Result<()> {
         listen(state_clone).await.expect("wtf listen died???");
     });
 
-    loop {}
+    let app = Router::new().merge(health::router()).with_state(state);
+
+    Server::bind(&"0.0.0.0:3000".parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
+    Ok(())
 }
 
 #[instrument]

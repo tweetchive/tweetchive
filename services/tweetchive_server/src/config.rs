@@ -25,6 +25,6 @@ impl Config {
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Worker {
-    pub ip: SocketAddr,
+    pub ip: String,
     pub ssk: String,
 }
