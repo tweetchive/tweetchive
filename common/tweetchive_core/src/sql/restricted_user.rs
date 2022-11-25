@@ -2,12 +2,13 @@ use chrono::{DateTime, Utc};
 use sea_orm::entity::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel)]
-#[sea_orm(table_name = "banned_user")]
+#[sea_orm(table_name = "restricted_user")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: u64,
     #[sea_orm(column_type = "Text")]
     pub reason: String,
+    pub rule_breaker: bool,
     pub date: DateTime<Utc>,
 }
 

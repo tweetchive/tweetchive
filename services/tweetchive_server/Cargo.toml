@@ -48,3 +48,6 @@ features = ["tags", "fail-on-err", "tokio-rustls-tls"]
 [dependencies.tweetchive_core]
 path = "../../common/tweetchive_core"
 features = ["server"]
+
+[dependencies.twtscrape]
+path = "../../common/twtscrape"

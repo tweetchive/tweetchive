@@ -1,4 +1,4 @@
-pub mod banned_user;
+pub mod restricted_user;
 pub mod files;
 pub mod redacted_media;
 pub mod redacted_tweets;
