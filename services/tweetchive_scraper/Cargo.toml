@@ -92,4 +92,3 @@ path = "../../common/twtscrape"
 
 [dependencies.tweetchive_core]
 path = "../../common/tweetchive_core"
-features = ["server"]

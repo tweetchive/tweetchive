@@ -6,9 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [features]
-default = ["server"]
-server = ["couch_rs", "sea-orm"]
-web = []
 
 [dependencies]
 ahash = "0.8"
@@ -17,12 +14,10 @@ serde_json = "1.0"
 [dependencies.couch_rs]
 version = "0.9"
 features = ["derive", "rustls-tls"]
-optional = true
 
 [dependencies.sea-orm]
 version = "0.10"
 features = ["macros", "with-chrono", "with-json", "with-uuid"]
-optional = true
 
 [dependencies.serde]
 version = "1.0"
