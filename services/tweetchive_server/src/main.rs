@@ -6,6 +6,7 @@ use tokio::sync::RwLock;
 
 mod api;
 mod config;
+mod setup;
 
 pub struct AppState {
     pub config: RwLock<Config>,
