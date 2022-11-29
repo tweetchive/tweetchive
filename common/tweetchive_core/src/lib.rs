@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 pub mod couchdb;
-#[cfg(feature = "server")]
 pub mod rabbitmq;
-#[cfg(feature = "server")]
 pub mod sql;
 
 #[derive(Copy, Clone, Debug, PartialOrd, PartialEq, Serialize, Deserialize)]

@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 use std::env::var;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
-use tokio::net::unix::SocketAddr;
 use color_eyre::eyre::Result;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]

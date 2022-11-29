@@ -1,9 +1,12 @@
 use crate::AddRemoveId;
 use ahash::HashSet;
+use couch_rs::CouchDocument;
 use rkyv::Archive;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uuid::Uuid;
+
+pub const FOLLOWERS: &str = "followers";
 
 #[derive(
     Clone,
@@ -15,8 +18,8 @@ use uuid::Uuid;
     Archive,
     rkyv::Serialize,
     rkyv::Deserialize,
+    CouchDocument,
 )]
-#[cfg_attr(feature = "server", derive(couch_rs::CouchDocument))]
 pub struct Followers {
     #[serde(skip_serializing_if = "String::is_empty")]
     pub _id: String,

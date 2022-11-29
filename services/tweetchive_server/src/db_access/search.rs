@@ -1,11 +1,9 @@
-use crate::api::tweet::tweet_api_req_url;
-use crate::api::user::user_api_req_url;
+use crate::db_access::tweet::tweet_api_req_url;
+use crate::db_access::user::user_api_req_url;
+use crate::herr::HResult;
 use crate::AppState;
-use axum::extract::Query;
 use axum::http::StatusCode;
-use axum::response::IntoResponse;
-use axum::{Extension, Json};
-use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter};
+use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -24,11 +22,11 @@ pub struct SearchResponseItem {
 
 #[instrument]
 pub async fn search(
-    Extension(state): Extension<Arc<AppState>>,
-    Query(params): Query<HashMap<String, String>>,
-) -> impl IntoResponse {
-    if let Some(handle) = params.get("handle") {
-        let req: impl Iterator<Item = SearchResponseItem> = sql::handles::Entity::find()
+    state: Arc<AppState>,
+    params: HashMap<String, String>,
+) -> HResult<Vec<SearchResponseItem>> {
+    if let Some(handle) = params.get("handler") {
+        let req = sql::handles::Entity::find()
             .filter(sql::handles::Column::Handle.contains(handle))
             .all(&state.sql)
             .await?
@@ -36,13 +34,14 @@ pub async fn search(
             .map(|x| SearchResponseItem {
                 item_id: x.user_id,
                 additional_info: HashMap::from([
-                    ("handle".to_string(), x.handle),
+                    ("handler".to_string(), x.handle),
                     ("snapshot".to_string(), x.snapshot_id.to_string()),
                 ]),
                 pointer: user_api_req_url(x.user_id),
-            });
+            })
+            .collect();
 
-        return Ok(Json(req));
+        return Ok(req);
     }
     if let Some(user_id) = params.get("user_id") {
         let id = user_id.parse::<u64>()?;
@@ -51,14 +50,14 @@ pub async fn search(
                 let sri = SearchResponseItem {
                     item_id: usr.id,
                     additional_info: HashMap::from([
-                        ("handle".to_string(), usr.latest_handle),
+                        ("handler".to_string(), usr.latest_handle),
                         ("snapshot".to_string(), usr.latest_snapshot_id.to_string()),
                     ]),
                     pointer: user_api_req_url(usr.id),
                 };
-                Ok(Json(vec![sri]))
+                Ok(vec![sri])
             }
-            None => Ok(Json(())),
+            None => Ok(vec![]),
         };
     }
 
@@ -90,8 +89,8 @@ pub async fn search(
             pointer: tweet_api_req_url(tweetid),
         };
 
-        return Ok(Json(vec![tweet]));
+        return Ok(vec![tweet]);
     }
 
-    Err(StatusCode::BAD_REQUEST)
+    Err(StatusCode::BAD_REQUEST.into())
 }

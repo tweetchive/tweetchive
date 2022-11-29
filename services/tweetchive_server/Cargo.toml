@@ -24,7 +24,7 @@ futures = "0.3.25"
 url = "2.3.1"
 
 [dependencies.axum]
-version = "0.6.0-rc.5"
+version = "0.6.0"
 features = ["http2"]
 
 [dependencies.sea-orm]

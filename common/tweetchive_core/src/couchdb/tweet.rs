@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use twtscrape::tweet::TweetType;
 use uuid::Uuid;
 
+pub const TWEETS: &str = "tweets";
+
 #[derive(
     Clone,
     Debug,
@@ -27,6 +29,7 @@ pub struct Tweet {
     pub reply_to: u64,
     pub author: u64,
     pub data: HashMap<Uuid, TweetType>,
+    pub tweet_media: HashMap<Uuid, Vec<TweetMedia>>,
 }
 
 #[derive(
@@ -40,13 +43,10 @@ pub struct Tweet {
     rkyv::Serialize,
     rkyv::Deserialize,
 )]
-pub struct LatestTweet {
-    pub _id: String,
-    pub also_ids: Vec<String>,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub _rev: String,
-    pub conversation_id: u64,
-    pub reply_to: u64,
-    pub poster: u64,
-    pub data: Option<TweetType>,
+pub struct TweetMedia {
+    pub file: Uuid,
+    pub file_type: String,
+    pub key: String,
+    pub alt_text: String,
+    pub views: Option<u32>,
 }

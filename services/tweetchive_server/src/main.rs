@@ -4,9 +4,11 @@ use couch_rs::Client;
 use sea_orm::DatabaseConnection;
 use tokio::sync::RwLock;
 
-mod api;
+mod db_access;
 mod config;
 mod setup;
+mod handler;
+mod herr;
 
 pub struct AppState {
     pub config: RwLock<Config>,

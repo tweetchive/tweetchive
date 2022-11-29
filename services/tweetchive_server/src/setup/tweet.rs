@@ -13,6 +13,8 @@ pub struct LatestTweetsOfUserOutput {
     pub snapshot: Uuid,
 }
 
+pub const TWEET_LATEST: &str = "latest_tweet_of_user";
+
 pub fn latest_tweets_of_user() -> CouchFunc {
     CouchFunc {
         map: format!(
@@ -50,6 +52,8 @@ pub struct LatestTweetsOfConversationOutput {
     pub snapshot: Uuid,
 }
 
+pub const CONVERSATION_LATEST: &str = "latest_tweet_of_conversation";
+
 pub fn latest_tweets_of_conversation() -> CouchFunc {
     CouchFunc {
         map: format!(
@@ -86,6 +90,8 @@ pub struct LatestRepliesToTweetOutput {
     pub data: TweetData,
     pub snapshot: Uuid,
 }
+
+pub const REPLY_LATEST: &str = "latest_replies_of_tweet";
 
 pub fn latest_replies_of_tweet() -> CouchFunc {
     CouchFunc {
