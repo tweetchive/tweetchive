@@ -5,15 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tweetchive - Twitter Archiver!</title>
+    <link rel="stylesheet" href="index.css">
+    <meta name="robots" content="noimageai">
+    <meta name="robots" content="noai">
 </head>
 <body>
-    <div>
+    <ul id="navbar">
+        <li><a href="/">Home</a></li>
+    </ul> 
+    <div id="content">
         <div>
             <h1>Tweetchive</h1>
             <h2>preserving the worst social media for future generations <strike>in the public interest</strike></h2>
         </div>
         <div>
-            <form>
+            <h3><a href="https://github.com/sponsors/tweetchive">please consider donating to help us stay online</a></h3>
+        </div>
+        <div>
+            <form action="/search">
                 <select>
                     <option value="tweet">
                         Tweet (ID)
@@ -29,14 +38,13 @@
                 <input type="submit">
             </form>
         </div>
-        <div>
-            <a href="about.html">about</a>
-            <a>report</a>
-            <a href="contact.html">contact</a>
-            <a>status</a>
-            <a>terms</a>
-            <a>privacy</a>
-        </div>
+    </div>
+    <div id="footer">
+        <a href="about.html">about</a>
+        <a href="report.html">report</a>
+        <a href="contact.html">contact</a>
+        <a href="status.html">status</a>
+        <a href="terms.html">terms</a>
     </div>
 </body>
 </html>

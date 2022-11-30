@@ -1,12 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tweetchive - Report Content</title>
-</head>
-<body>
-    
-</body>
+    <link rel="stylesheet" href="index.css" />
+    <meta name="robots" content="noimageai" />
+    <meta name="robots" content="noai" />
+  </head>
+  <body>
+    <ul id="navbar">
+      <li><a href="/">Home</a></li>
+    </ul>
+    <div id="content">
+      <h2>Report Content Form</h2>
+      <form>
+        <label> i am reporting a </label>
+        <select>
+          <option value="Tweet (ID)">Tweet (ID)</option>
+          <option value="User (ID)">User (ID)</option>
+        </select>
+        <input type="text" name="report target" />
+        <br />
+        <label>for</label>
+        <select>
+          <option value="hate">hate speech</option>
+          <option value="privacy">privacy violation</option>
+          <option value="copyright">DMCA/Copyright violation</option>
+        </select>
+        <br />
+        <label>Additional Information:</label>
+        <input type="text" name="additional information" />
+        <br /><br />
+        <label
+          >by clicking "Submit", I have read and agreed to the Terms of Service
+          and Privacy Policy. I certify I am authorized to make this request,
+          and make this report in good faith.
+        </label>
+        <br />
+        <input type="submit" name="submit" value="Submit" />
+      </form>
+    </div>
+
+    <div id="footer">
+      <a href="about.html">about</a>
+      <a href="donate.html">donate</a>
+      <a href="report.html">report</a>
+      <a href="contact.html">contact</a>
+      <a href="status.html">status</a>
+      <a href="terms.html">terms</a>
+    </div>
+  </body>
 </html>
