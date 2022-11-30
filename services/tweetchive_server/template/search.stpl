@@ -14,7 +14,14 @@
       <li><a href="/">Home</a></li>
     </ul>
     <div id="content">
-
+      <% if results.is_empty() { %>
+        <div>No Results...</div>
+      <% } %>
+      <% for rslt in results { %>
+        <div id="<%=rslt.item_id%>">
+        <h4></h4>
+        </div>
+      <% } %>
     </div>
     <div id="footer">
       <a href="about.html">about</a>
