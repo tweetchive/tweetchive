@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-mod search;
-mod tweet;
-mod user;
+pub mod follows;
+pub mod snapshot;
+pub mod tweet;
+pub mod user;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

@@ -1,8 +1,8 @@
-use crate::herr::HResult;
 use crate::setup::tweet::{
     LatestRepliesToTweetOutput, LatestTweetsOfConversationOutput, CONVERSATION_LATEST, TWEET_LATEST,
 };
 use crate::AppState;
+use color_eyre::Result;
 use couch_rs::types::query::QueryParams;
 use couch_rs::types::view::RawViewCollection;
 use std::sync::Arc;
@@ -14,7 +14,7 @@ pub async fn timeline(
     state: Arc<AppState>,
     id: u64,
     page: Option<u32>,
-) -> HResult<Vec<LatestRepliesToTweetOutput>> {
+) -> Result<Option<Vec<LatestRepliesToTweetOutput>>> {
     let mut query = match page {
         Some(p) => QueryParams::default().skip(30 * p as u64),
         None => QueryParams::default(),
@@ -29,14 +29,14 @@ pub async fn timeline(
         .query(TWEETS, TWEET_LATEST, Some(query))
         .await?;
 
-    Ok(data.rows.into_iter().map(|row| row.value).collect())
+    Ok(Some(data.rows.into_iter().map(|row| row.value).collect()))
 }
 
 #[instrument]
 pub async fn thread(
     state: Arc<AppState>,
     conversation_id: u64,
-) -> HResult<Vec<LatestTweetsOfConversationOutput>> {
+) -> Result<Option<Vec<LatestTweetsOfConversationOutput>>> {
     let query = QueryParams::default().key(conversation_id);
 
     let mut data: RawViewCollection<u64, LatestTweetsOfConversationOutput> = state
@@ -45,10 +45,10 @@ pub async fn thread(
         .query(TWEETS, CONVERSATION_LATEST, Some(query))
         .await?;
 
-    Ok(data.rows.into_iter().map(|row| row.value).collect())
+    Ok(Some(data.rows.into_iter().map(|row| row.value).collect()))
 }
 
 #[instrument]
-pub async fn tweet(state: Arc<AppState>, id: u64) -> HResult<Tweet> {
-    Ok(state.couches.tweets.get(&id.to_string()).await?)
+pub async fn tweet(state: Arc<AppState>, id: u64) -> Result<Option<Tweet>> {
+    Ok(Some(state.couches.tweets.get(&id.to_string()).await?))
 }

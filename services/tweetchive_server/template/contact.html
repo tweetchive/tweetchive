@@ -14,12 +14,53 @@
       <li><a href="/">Home</a></li>
     </ul>
 
-    <div>
-      <h1>email:</h1>
-      <script type="text/javascript">
-        emailE = "tweetchive@" + "protonmail.com";
-        document.write('<a href="mailto:' + emailE + '">' + emailE + "</a>");
-      </script>
+    <div id="content">
+      <div>
+        <h2>email:</h2>
+        <script type="text/javascript">
+          function base64DecodeUnicode(str) {
+            // Convert Base64 encoded bytes to percent-encoding, and then get the original string.
+            let percentEncodedStr = atob(str)
+              .split("")
+              .map(function (c) {
+                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+              })
+              .join("");
+
+            return decodeURIComponent(percentEncodedStr);
+          }
+
+          let a_ = "dHdlZXRjaGl2ZUA=";
+          let b = "cHJvdG9ubWFpbA==";
+          let c = "Lg==";
+          let d = "Y29t";
+          let emailE =
+            base64DecodeUnicode(a_) +
+            base64DecodeUnicode(b) +
+            base64DecodeUnicode(c) +
+            base64DecodeUnicode(d);
+          document.write('<a href="mailto:' + emailE + '">' + emailE + "</a>");
+        </script>
+        <noscript>
+          <p>[email redacted]</p>
+        </noscript>
+      </div>
+      <div>
+        <h2>twitter</h2>
+        <a>@tweetchive</a>
+      </div>
+      <div>
+        <h2>github</h2>
+        <a>tweetchive</a>
+      </div>
+      <div>
+        <h2>cohost</h2>
+        <a>@tweetchive</a>
+      </div>
+      <div>
+        <h2>mastadon/fedi</h2>
+        <a>@tweetchive@example.com</a>
+      </div>
     </div>
 
     <div id="footer">

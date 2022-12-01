@@ -14,12 +14,26 @@
       <li><a href="/">Home</a></li>
     </ul>
     <div id="content">
-      <% if results.is_empty() { %>
+      <h1>Results</h1>
+      <hr />
+      <h2>users</h2>
+      <hr />
+      <% if user_results.is_empty() { %>
         <div>No Results...</div>
       <% } %>
-      <% for rslt in results { %>
+      <% for rslt in user_results { %>
         <div id="<%=rslt.item_id%>">
-        <h4></h4>
+          <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
+        </div>
+      <% } %>
+      <h2>tweets</h2>
+      <hr />
+      <% if tweet_results.is_empty() { %>
+        <div>No Results...</div>
+      <% } %>
+      <% for rslt in tweet_results { %>
+        <div id="<%=rslt.item_id%>">
+          <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
         </div>
       <% } %>
     </div>

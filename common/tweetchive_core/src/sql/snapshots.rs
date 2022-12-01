@@ -12,6 +12,8 @@ pub struct Model {
     pub finish: Option<DateTime<Utc>>,
     #[sea_orm(indexed, column_type = "Text")]
     pub init_args: String,
+    pub started_by: String,
+    pub priority: i32,
 }
 
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, EnumIter)]

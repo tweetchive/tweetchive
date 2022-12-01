@@ -9,7 +9,6 @@ edition = "2021"
 tokio = "1.21.2"
 serde_json = "1.0.87"
 toml = "0.5.9"
-tokio-tungstenite = "0.17.2"
 color-eyre = "0.6.2"
 tracing = "0.1.37"
 tracing-subscriber = "0.3.16"
@@ -24,8 +23,8 @@ futures = "0.3.25"
 url = "2.3.1"
 
 [dependencies.axum]
-version = "0.6.0"
-features = ["http2"]
+version = "0.6.1"
+features = ["http2", "form"]
 
 [dependencies.sea-orm]
 version = "0.10.1"
@@ -44,6 +43,10 @@ features = ["derive"]
 version = "0.33.0-beta4"
 default-features = false
 features = ["tags", "fail-on-err", "tokio-rustls-tls"]
+
+[dependencies.chrono]
+version = "0.4.23"
+features = ["serde"]
 
 [dependencies.tweetchive_core]
 path = "../../common/tweetchive_core"
