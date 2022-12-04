@@ -1,5 +1,5 @@
 use crate::AddRemoveId;
-use ahash::HashSet;
+use ahash::RandomState;
 use couch_rs::CouchDocument;
 use rkyv::Archive;
 use serde::{Deserialize, Serialize};
@@ -25,9 +25,5 @@ pub struct Followers {
     pub _id: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub _rev: String,
-    pub base_state: HashSet<u64>,
-    pub base_snapshot: Uuid,
-    pub diff: HashMap<Uuid, AddRemoveId>,
-    pub current_set: HashSet<u64>,
-    pub current_snapshot: Uuid,
+    pub diff: HashMap<Uuid, AddRemoveId, RandomState>,
 }

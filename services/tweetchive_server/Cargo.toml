@@ -48,6 +48,10 @@ features = ["tags", "fail-on-err", "tokio-rustls-tls"]
 version = "0.4.23"
 features = ["serde"]
 
+[dependencies.moka]
+version = "0.9.6"
+features = ["future"]
+
 [dependencies.tweetchive_core]
 path = "../../common/tweetchive_core"
 
