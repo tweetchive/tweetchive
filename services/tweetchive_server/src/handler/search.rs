@@ -12,7 +12,7 @@ pub struct SearchQuery {
 }
 
 #[instrument]
-pub async fn status(
+pub async fn search(
     Extension(state): Extension<Arc<AppState>>,
     Form(search): Form<SearchQuery>,
 ) -> impl IntoResponse {

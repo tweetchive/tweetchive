@@ -1,14 +1,16 @@
+use color_eyre::eyre::Result;
 use serde::{Deserialize, Serialize};
 use std::env::var;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
-use color_eyre::eyre::Result;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub database: String,
     pub super_secret_key: String,
     pub workers: Vec<Worker>,
+    pub github_client_id: String,
+    pub github_client_secret: String,
 }
 
 impl Config {

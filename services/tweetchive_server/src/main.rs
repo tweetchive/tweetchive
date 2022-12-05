@@ -1,6 +1,7 @@
 use crate::config::Config;
 use couch_rs::database::Database;
 use couch_rs::Client;
+use oauth2::basic::BasicClient;
 use sea_orm::DatabaseConnection;
 use tokio::sync::RwLock;
 
@@ -15,6 +16,7 @@ pub struct AppState {
     pub sql: DatabaseConnection,
     pub couch_client: Client,
     pub couches: Couches,
+    pub oauth: BasicClient,
 }
 
 pub struct Caches {
