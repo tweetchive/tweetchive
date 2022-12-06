@@ -3,6 +3,7 @@ pub mod files;
 pub mod handles;
 pub mod redacted_media;
 pub mod redacted_tweets;
+pub mod report;
 pub mod restricted_user;
 pub mod snapshots;
 pub mod token;

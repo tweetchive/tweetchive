@@ -16,27 +16,30 @@
     <div id="content">
       <h1>Results</h1>
       <hr />
-      <h2>users</h2>
-      <hr />
-      <% if user_results.is_empty() { %>
-        <div>No Results...</div>
-      <% } %>
-      <% for rslt in user_results { %>
-        <div id="<%=rslt.item_id%>">
-          <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
-        </div>
-      <% } %>
-      <h2>tweets</h2>
-      <hr />
-      <% if tweet_results.is_empty() { %>
-        <div>No Results...</div>
-      <% } %>
-      <% for rslt in tweet_results { %>
-        <div id="<%=rslt.item_id%>">
-          <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
-        </div>
-      <% } %>
+      <div>
+        <h2>users</h2>
+        <hr />
+        <% if user_results.is_empty() { %>
+          <div>No Results...</div>
+        <% } %>
+        <% for rslt in user_results { %>
+          <div id="<%=rslt.item_id%>">
+            <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
+          </div>
+        <% } %>
+        <h2>tweets</h2>
+        <hr />
+        <% if tweet_results.is_empty() { %>
+          <div>No Results...</div>
+        <% } %>
+        <% for rslt in tweet_results { %>
+          <div id="<%=rslt.item_id%>">
+            <a href="/<%=rslt.link%>" >@<%= rslt.handle %></a>
+          </div>
+        <% } %>
+      </div>
     </div>
+
     <div id="footer">
       <a href="about.html">about</a>
       <a href="https://github.com/sponsors/l1npengtul">donate</a>      <a href="report.html">report</a>

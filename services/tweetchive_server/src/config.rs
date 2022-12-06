@@ -11,6 +11,7 @@ pub struct Config {
     pub workers: Vec<Worker>,
     pub github_client_id: String,
     pub github_client_secret: String,
+    pub admin_github_users: Vec<String>,
 }
 
 impl Config {
