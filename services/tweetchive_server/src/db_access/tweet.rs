@@ -1,10 +1,12 @@
 use crate::setup::tweet::{
-    LatestRepliesToTweetOutput, LatestTweetsOfConversationOutput, CONVERSATION_LATEST, TWEET_LATEST,
+    LatestRepliesToTweetOutput, LatestTweetsOfConversationOutput, CONVERSATION_LATEST,
+    TWEET_BY_ALSO_IDS, TWEET_LATEST,
 };
 use crate::AppState;
 use color_eyre::Result;
 use couch_rs::types::query::QueryParams;
-use couch_rs::types::view::RawViewCollection;
+use couch_rs::types::view::{RawViewCollection, ViewItem};
+use serde_json::Value;
 use std::sync::Arc;
 use tracing::instrument;
 use tweetchive_core::couchdb::tweet::{Tweet, TWEETS};
@@ -50,5 +52,21 @@ pub async fn thread(
 
 #[instrument]
 pub async fn tweet(state: Arc<AppState>, id: u64) -> Result<Option<Tweet>> {
-    Ok(Some(state.couches.tweets.get(&id.to_string()).await?))
+    let query = QueryParams::default().key(id);
+
+    let mut id: RawViewCollection<u64, u64> = state
+        .couches
+        .tweets
+        .query(TWEETS, TWEET_BY_ALSO_IDS, Some(query))
+        .await?;
+
+    let actual_id = match id.rows.first() {
+        None => return Ok(None),
+        Some(aid) => match &aid.id {
+            None => return Ok(None),
+            Some(id) => id,
+        },
+    };
+
+    Ok(Some(state.couches.tweets.get(actual_id).await?))
 }

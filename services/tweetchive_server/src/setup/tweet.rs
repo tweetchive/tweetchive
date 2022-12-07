@@ -33,10 +33,10 @@ pub fn latest_tweets_of_user() -> CouchFunc {
                 \"also_ids\": doc.also_ids
                 \"conversation_id\": doc.conversation_id,
                 \"reply_to\": doc.reply_to,
-                \"data\": value
+                \"data\": value,
                 \"snapshot\": max
             }})
-        }} "
+        }}"
         ),
         reduce: None,
     }
@@ -72,10 +72,10 @@ pub fn latest_tweets_of_conversation() -> CouchFunc {
                 \"also_ids\": doc.also_ids
                 \"author\": doc.author,
                 \"reply_to\": doc.reply_to,
-                \"data\": value
+                \"data\": value,
                 \"snapshot\": max
             }})
-        }} "
+        }}"
         ),
         reduce: None,
     }
@@ -111,10 +111,27 @@ pub fn latest_replies_of_tweet() -> CouchFunc {
                 \"also_ids\": doc.also_ids
                 \"author\": doc.author,
                 \"conversation_id\": doc.conversation_id,
-                \"data\": value
+                \"data\": value,
                 \"snapshot\": max
             }})
-        }} "
+        }}"
+        ),
+        reduce: None,
+    }
+}
+
+pub const TWEET_BY_ALSO_IDS: &str = "tweet_by_also_id";
+
+pub fn tweets_by_also_ids() -> CouchFunc {
+    CouchFunc {
+        map: format!(
+            "\
+        function (doc) {{\
+            emit(doc._id, doc._id);
+            for (var alsoid in doc.also_ids) {{
+                emit(alsoid, doc._id);
+            }}
+        }}"
         ),
         reduce: None,
     }

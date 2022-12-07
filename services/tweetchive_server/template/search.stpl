@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tweetchive - Search Results for</title>
     <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <meta name="robots" content="noimageai" />
     <meta name="robots" content="noai" />
   </head>
@@ -24,8 +25,17 @@
         <% } %>
         <% for rslt in user_results { %>
           <div id="<%=rslt.item_id%>">
-            <a href="/<%=rslt.handle%>" >@<%= rslt.handle %></a>
-          </div>
+            <a href="/<%=rslt.handle%>">
+              <%= rslt.name %> <i> @<%= rslt.handle %> </i>
+              <% if rslt.verified { %>
+                <i class="fa fa-check-circle" aria-hidden="true"></i>
+              <% } %>
+              <% if rslt.private { %>
+                <i class="fa fa-lock" aria-hidden="true"></i>
+              <% } %>
+              <% if rslt.nft { %>
+                <i class="fa fa-minus-square" aria-hidden="true"></i>
+              <% } %>
         <% } %>
         <h2>tweets</h2>
         <hr />
@@ -34,7 +44,7 @@
         <% } %>
         <% for rslt in tweet_results { %>
           <div id="<%=rslt.item_id%>">
-            <a href="/<%=rslt.link%>" >@<%= rslt.handle %></a>
+            <a href="/<%=rslt.link%>" ></a>
           </div>
         <% } %>
       </div>
